@@ -65,9 +65,9 @@ int main(int argc, char *argv[]) {
 
     printf("This is my sum: %.16f from rank: %d name: %s\n", mypi, rank, name);
 
-    /* Now we can reduce all those sums to one value which is Pi */
+    /* Now we can gather all those sums to one value which is Pi */
     // TO DO
-    MPI_Gather()
+    MPI_Gather(&mypi, n, MPI_DOUBLE, &pi, 1, MPI_DOUBLE, 0, MPI_Comm)
     // end TO DO
 
     if (rank == 0) {
