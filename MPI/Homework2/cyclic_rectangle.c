@@ -1,6 +1,7 @@
 /***********************************************************
 * Program: Pi Calculation
 * Using the Rectangular Rule
+* Using cyclic partitioning 
 * 
 *************************************************************/
 
@@ -28,13 +29,18 @@ int main(int argc, char *argv[]) {
 
     char name[MAX_NAME];        /* char array for storing the name of each process */
 
+    double* a = NULL
+
     double start_time,          /* starting time */
            end_time,            /* ending time */
            computation_time;    /* time for computing value of PI */
 
     /*Initialize MPI execution environment */
     // TO DO
-    // ..............
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+    printf("Number of the processes = %d, ProcessID = %d\n", nprocs, rank)
     // end TO DO
 
     MPI_Get_processor_name(name, &len);
@@ -43,11 +49,10 @@ int main(int argc, char *argv[]) {
 
     /* Broadcast the number of bins to all processes */
     /* This broadcasts an integer which is n, from the master to all processes
-     * and
      */
 
     // TO DO
-    // ..............
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     // end TO DO
 
     /* Calculating for each process */
@@ -64,7 +69,7 @@ int main(int argc, char *argv[]) {
 
     /* Now we can reduce all those sums to one value which is Pi */
     // TO DO
-    // ...............
+    MPI_Reduce(&mypi, &pi, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     // end TO DO
 
     if (rank == 0) {
@@ -77,3 +82,4 @@ int main(int argc, char *argv[]) {
     MPI_Finalize();
     return 0;
 }
+
