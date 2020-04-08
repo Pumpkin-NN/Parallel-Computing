@@ -26,9 +26,10 @@ double Trap(
       int    trap_count  /* in */, 
       double base_len    /* in */) {
    double estimate, x;
+   int i;
 
    estimate = (f(left_endpt) + f(right_endpt))/2.0;
-   for (int i = 1; i <= trap_count-1; i++) {
+   for (i = 1; i <= trap_count-1; i++) {
       x = left_endpt + i*base_len;
       estimate += f(x);
    }
@@ -57,10 +58,8 @@ int main(void) {
 
     local_a = BLOCK_LOW(my_rank, comm_sz, n);
     local_b = BLOCK_HIGH(my_rank, comm_sz, n);
-    printf("The local_a is: %f\nThe local_b is: %f\n", local_a, local_b);
 
     local_int = Trap(local_a, local_b, local_n, h);
-    printf("The local_int is: %f\n", local_int);
 
     /* Add up the integrals calculated by each process */
     MPI_Reduce(&local_int, &total_int, 1, MPI_DOUBLE, MPI_SUM, 0,
