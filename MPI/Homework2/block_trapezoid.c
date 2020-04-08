@@ -25,19 +25,14 @@ double Trap(
       double right_endpt /* in */, 
       int    trap_count  /* in */, 
       double base_len    /* in */) {
-   double estimate, x; 
-   int i;
+   double estimate, x;
 
    estimate = (f(left_endpt) + f(right_endpt))/2.0;
-//    printf("The estimate1 is %f\n", estimate);
-   for (i = 1; i <= trap_count-1; i++) {
+   for (int i = 1; i <= trap_count-1; i++) {
       x = left_endpt + i*base_len;
       estimate += f(x);
-    //   printf("The estimate2 is %f\n", estimate);
    }
    estimate = estimate*base_len;
-//    printf("The base_len is %f\n", base_len);
-//    printf("The estimate3 is %f\n", estimate);
 
    return estimate;
 }
