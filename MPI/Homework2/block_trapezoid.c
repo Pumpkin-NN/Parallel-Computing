@@ -1,127 +1,83 @@
-/***********************************************************
-* Program: Pi Calculation
-* Using the Rectangular Rule
-* Using cyclic partitioning 
-* 
-*************************************************************/
-
-#include "mpi.h"
-#include <math.h>
 #include <stdio.h>
+#include <mpi.h>
 
-#define MAX_NAME 80   /* length of characters for naming a process */
-#define MASTER 0      /* rank of the master */
+#define BLOCK_LOW(id,p,n)   ((id)*(n)/(p))
+#define BLOCK_HIGH(id,p,n)  (BLOCK_LOW((id)+1,p,n)-1)
 
-/*------------------------------------------------------------------
- * Function:    f
- * Purpose:     Compute Pi function
- * Input args:  x
- */
+// Get input
+void Get_input(int my_rank, int comm_sz, int* n_p) {
+
+   if (my_rank == 0) {
+      printf("Enter the number n (at least 10000000): \n");
+      scanf("%d", n_p);
+   } 
+   MPI_Bcast(n_p, 1, MPI_INT, 0, MPI_COMM_WORLD);
+}
+
+// Pi function
 double f(double x) {
    return (4.0/(1.0 + x*x));
-} /* f */
-
-/*------------------------------------------------------------------
- * Function:    Trapeziod_rule
- * Purpose:     Use the trapezoidal rule to compute the function
- * Input args:  left_endpt
- *              right_endpt
- *              trap_count 
- *              base_len
- */
-double Trapeziod_rule(
-    double left_endpt,
-    double right_endpt,
-    int trap_count,
-    double base_len
-){
-    double estimate, x;
-    int i;
-    estimate = (f(left_endpt) + f(right_endpt)) / 2.0
-    for (i = 1; i <= trap_count - 1; i++){
-        x = left_endpt + i * base_len;
-        estimate += f(x);
-    }
-
-    estimate = estimate * base_len;
-    return estimate;
 }
 
+// Trapezoidal Rule
+double Trap(
+      double left_endpt  /* in */, 
+      double right_endpt /* in */, 
+      int    trap_count  /* in */, 
+      double base_len    /* in */) {
+   double estimate, x; 
+   int i;
 
+   estimate = (f(left_endpt) + f(right_endpt))/2.0;
+//    printf("The estimate1 is %f\n", estimate);
+   for (i = 1; i <= trap_count-1; i++) {
+      x = left_endpt + i*base_len;
+      estimate += f(x);
+    //   printf("The estimate2 is %f\n", estimate);
+   }
+   estimate = estimate*base_len;
+//    printf("The base_len is %f\n", base_len);
+//    printf("The estimate3 is %f\n", estimate);
 
-int main(int argc, char *argv[]) {
+   return estimate;
+}
 
-    int rank,                                           /* rank variable to identify the process */
-        nprocs,                                         /* number of processes */
-        i,
-        len;                                            /* variable for storing name of processes */
+int main(void) {
 
-    int n = 10000;                                      /* the number of bins */
-    double PI25DT = 3.141592653589793238462643;         /* 25-digit-PI*/
-    double mypi,                                        /* value from each process */
-           pi,                                          /* value of PI in total*/
-           step,                                        /* the step */
-           sum,                                         /* sum of area under the curve */
-           x;
+    int my_rank, comm_sz, n, local_n;   
+    double h;
+    double local_a, local_b, local_int, total_int;
 
-    char name[MAX_NAME];        /* char array for storing the name of each process */
+    /* Let the system do what it needs to start up MPI */
+    MPI_Init(NULL, NULL);
+    /* Get my process rank */
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    /* Find out how many processes are being used */
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-    double start_time,          /* starting time */
-           end_time,            /* ending time */
-           computation_time;    /* time for computing value of PI */
+    Get_input(my_rank, comm_sz, &n);
 
-    /*Initialize MPI execution environment */
-    // TO DO
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-    printf("Number of the processes = %d, ProcessID = %d\n", nprocs, rank)
-    // end TO DO
+    h = (double) 1/n;
+    local_n = n/comm_sz;
 
-    MPI_Get_processor_name(name, &len);
+    local_a = BLOCK_LOW(my_rank, comm_sz, n);
+    local_b = BLOCK_HIGH(my_rank, comm_sz, n);
+    printf("The local_a is: %f\nThe local_b is: %f\n", local_a, local_b);
 
-    start_time = MPI_Wtime();
+    local_int = Trap(local_a, local_b, local_n, h);
+    printf("The local_int is: %f\n", local_int);
 
-    /* Broadcast the number of bins to all processes */
-    /* This broadcasts an integer which is n, from the master to all processes
-     */
+    /* Add up the integrals calculated by each process */
+    MPI_Reduce(&local_int, &total_int, 1, MPI_DOUBLE, MPI_SUM, 0,
+            MPI_COMM_WORLD);
 
-    // TO DO
-    MPI_Scatter()
-    // end TO DO
-
-    // /* Calculating for each process */
-    // step = 1.0 / (double) n;
-    // sum = 0.0;
-    // for (i = rank; i < n; i += nprocs) {
-    //     x = step * ((double)i + 0.5);
-    //     sum += (4.0/(1.0 + x*x));
-    // }
-
-    // mypi = step * sum;
-
-    // printf("This is my sum: %.16f from rank: %d name: %s\n", mypi, rank, name);
-
-    // Using Trapeziodal rule
-
-
-
-
-
-
-    /* Now we can reduce all those sums to one value which is Pi */
-    // TO DO
-    MPI_Gather()
-    // end TO DO
-
-    if (rank == 0) {
-        printf("Pi is approximately %.16f, Error is %.16f\n", pi, fabs(pi - PI25DT));
-        end_time = MPI_Wtime();
-        computation_time = end_time - start_time;
-        printf("Time of calculating PI is: %f\n", computation_time);
+    /* Print the result */
+    if (my_rank == 0) {
+        printf("With n = %d trapezoids, The estimate of the integral from 0 to 1 = %.15e\n", n, total_int);
     }
-    /* Terminate MPI execution environment */
+
+    /* Shut down MPI */
     MPI_Finalize();
-    return 0;
-}
 
+    return 0;
+} /*  main  */

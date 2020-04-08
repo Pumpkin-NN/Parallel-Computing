@@ -29,8 +29,6 @@ int main(int argc, char *argv[]) {
 
     char name[MAX_NAME];        /* char array for storing the name of each process */
 
-    double* a = NULL
-
     double start_time,          /* starting time */
            end_time,            /* ending time */
            computation_time;    /* time for computing value of PI */
@@ -40,7 +38,7 @@ int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-    printf("Number of the processes = %d, ProcessID = %d\n", nprocs, rank)
+    printf("Number of the processes = %d, ProcessID = %d\n", nprocs, rank);
     // end TO DO
 
     MPI_Get_processor_name(name, &len);

@@ -11,6 +11,9 @@
 
 #define MAX_NAME 80   /* length of characters for naming a process */
 #define MASTER 0      /* rank of the master */
+#define BLOCK_LOW(id,p,n)   ((id)*(n)/(p))
+#define BLOCK_HIGH(id,p,n)  (BLOCK_LOW((id)+1,p,n)-1)
+
 
 int main(int argc, char *argv[]) {
 
@@ -38,7 +41,7 @@ int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-    printf("Number of the processes = %d, ProcessID = %d\n", nprocs, rank)
+    printf("Number of the processes = %d, ProcessID = %d\n", nprocs, rank);
     // end TO DO
 
     MPI_Get_processor_name(name, &len);
@@ -50,13 +53,13 @@ int main(int argc, char *argv[]) {
      */
 
     // TO DO
-    MPI_Scatter()
+    //MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     // end TO DO
 
     /* Calculating for each process */
     step = 1.0 / (double) n;
     sum = 0.0;
-    for (i = rank; i < n; i += nprocs) {
+    for (i = BLOCK_LOW(rank, nprocs, n); i < BLOCK_HIGH(rank, nprocs, n); i ++) {
         x = step * ((double)i + 0.5);
         sum += (4.0/(1.0 + x*x));
     }
@@ -65,9 +68,9 @@ int main(int argc, char *argv[]) {
 
     printf("This is my sum: %.16f from rank: %d name: %s\n", mypi, rank, name);
 
-    /* Now we can gather all those sums to one value which is Pi */
+    /* Now we can reduce all those sums to one value which is Pi */
     // TO DO
-    MPI_Gather(&mypi, n, MPI_DOUBLE, &pi, 1, MPI_DOUBLE, 0, MPI_Comm)
+    MPI_Reduce(&mypi, &pi, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     // end TO DO
 
     if (rank == 0) {

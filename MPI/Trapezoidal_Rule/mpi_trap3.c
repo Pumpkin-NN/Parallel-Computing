@@ -90,7 +90,7 @@ int main(void) {
  * Input args:   my_rank:  process rank in MPI_COMM_WORLD
  *               comm_sz:  number of processes in MPI_COMM_WORLD
  * Output args:  a_p:  pointer to left endpoint               
- *               b_p:  pointer to right endpoint               
+ *               b_p:  pointer o right endpoint               
  *               n_p:  pointer to number of trapezoids
  */
 void Get_input(int my_rank, int comm_sz, double* a_p, double* b_p,
@@ -142,5 +142,5 @@ double Trap(
  * Input args:  x
  */
 double f(double x) {
-   return x*x;
+   return (4.0/(1.0 + x*x));
 } /* f */
