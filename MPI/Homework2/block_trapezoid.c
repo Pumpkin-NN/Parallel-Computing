@@ -54,12 +54,11 @@ int main(void) {
     Get_input(my_rank, comm_sz, &n);
 
     h = (double) 1/n;
-    local_n = n/comm_sz;
 
     local_a = BLOCK_LOW(my_rank, comm_sz, n);
     local_b = BLOCK_HIGH(my_rank, comm_sz, n);
 
-    local_int = Trap(local_a, local_b, local_n, h);
+    local_int = Trap(local_a, local_b, n, h);
 
     /* Add up the integrals calculated by each process */
     MPI_Reduce(&local_int, &total_int, 1, MPI_DOUBLE, MPI_SUM, 0,
