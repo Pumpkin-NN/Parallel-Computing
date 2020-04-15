@@ -34,6 +34,7 @@ int main(int argc, char *argv[] ) {
     int result[WIDTH];          /* vector we get after multiplication */
 
     MPI_Status status;          /* status for receiving */
+    MPI_Comm comm;
 
     /* Initialize MPI execution environment */
     MPI_Init( &argc,&argv);
@@ -70,7 +71,10 @@ int main(int argc, char *argv[] ) {
             rows = (dest <= extra) ? averow + 1 : averow;
             printf("Sending %d rows to task %d offset = %d\n", rows, dest, offset);
             // TO DO
-            //..............
+            MPI_Send(&rows, 1, MPI_INT, dest, mtype, comm);
+            MPI_Send(&offset, 1, MPI_INT, dest, mtype, comm);
+            MPI_Send(&vector, WIDTH, MPI_INT, dest, mtype, comm);
+            MPI_Send(&matrix[offset][0], rows * WIDTH, MPI_INT, dest, mtype, comm);
             // end TO DO
             offset += rows;
         }
@@ -81,7 +85,9 @@ int main(int argc, char *argv[] ) {
         for (i = 1; i <= numworkers; i++) {
              source = i;
              // TO DO
-             //..................
+             MPI_Recv(&offset, 1, MPI_INT, source, mtype, comm, &status);
+             MPI_Recv(&rows, 1, MPI_INT, source, mtype, comm, &status);
+             MPI_Recv(&result[offset], rows, MPI_INT, source, mtype, comm, &status);
              // end TO DO
              printf("Received results from task %d\n", source);
         }
@@ -99,7 +105,10 @@ int main(int argc, char *argv[] ) {
 
         /* Receive the task from master */
         // TO DO:
-        //................
+        MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, comm, &status);
+        MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, comm, &status);
+        MPI_Recv(&vector, WIDTH, MPI_INT, MASTER, mtype, comm, &status);
+        MPI_Recv(&matrix, rows * WIDTH, MPI_INT, MASTER, mtype, comm, &status);
         // end TO DO
 
         /* Each worker works on their computation */
@@ -113,7 +122,9 @@ int main(int argc, char *argv[] ) {
         /* send the result back to the master */
         mtype = FROM_WORKER;
         // TO DO:
-        // ..................
+        MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, comm);
+        MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, comm);
+        MPI_Send(&result, rows, MPI_INT, MASTER, mtype, comm);
         //end TO DO
     }
 
