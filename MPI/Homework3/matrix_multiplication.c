@@ -30,8 +30,8 @@ int main (int argc, char *argv[]) {
         dest,                  /* task id of message destination */
         mtype,                 /* message type */
         rows,                  /* rows of matrix A sent to each worker */
-		averow, extra, offset, /* used to determine rows sent to each worker */
-        i, j, k;               /* misc */
+	averow, extra, offset, /* used to determine rows sent to each worker */
+        i, j, k,               /* misc */
         errorCode = 1;         /* error code initialized for MPI_Abort */
 
     double      a[ROWA][COLA],           /* matrix A to be multiplied */
@@ -39,7 +39,7 @@ int main (int argc, char *argv[]) {
                 c[ROWA][COLB];           /* result matrix C */
 
     MPI_Status status; /* status for receiving */
-    MPI_Comm comm;
+
 
     /* Initializing MPI execution environment */
     MPI_Init(&argc,&argv);
@@ -89,10 +89,10 @@ int main (int argc, char *argv[]) {
             rows = (dest <= extra) ? averow+1 : averow;
             printf("Sending %d rows to task %d offset=%d\n", rows, dest, offset);
             // TO DO
-            MPI_Send(&offset, 1, MPI_INT, dest, mtype, comm);
-            MPI_Send(&rows, 1, MPI_INT, dest, mtype, comm);
-            MPI_Send(&a[offset][0], rows * ROWA, MPI_DOUBLE, dest, mtype, comm);
-            MPI_Send(&b, COLA * COLB, MPI_DOUBLE, dest, mtype, comm);
+            MPI_Send(&offset, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&rows, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&a[offset][0], rows*COLA, MPI_DOUBLE, dest, mtype, MPI_COMM_WORLD);
+            MPI_Send(&b, COLA*COLB, MPI_DOUBLE, dest, mtype, MPI_COMM_WORLD);
             // end TO DO
             /* the first process gets row 0 to some rows, and so on */
             offset = offset + rows;
@@ -103,9 +103,9 @@ int main (int argc, char *argv[]) {
         for (i = 1; i <= numworkers; i++) {
             source = i; /* Specifying where it is coming from */
             // TO DO
-            MPI_Recv(&offset, 1, MPI_INT, source, mtype, comm, &status);
-            MPI_Recv(&rows, 1, MPI_INT, source, mtype, comm, &status);
-            MPI_Recv(&c[offset][0], rows * COLB, MPI_INT, source, mtype, comm, &status);
+            MPI_Recv(&offset, 1, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
+            MPI_Recv(&rows, 1, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
+            MPI_Recv(&c[offset][0], rows*COLB, MPI_DOUBLE, source, mtype, MPI_COMM_WORLD, &status);
             // end TO DO
             printf("Received results from task %d\n",source);
         }
@@ -132,12 +132,10 @@ int main (int argc, char *argv[]) {
         mtype = FROM_MASTER;
 
         /* Each worker receive task from master */
-        // TO DO
-        MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, comm, &status);
-        MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, comm, &status);
-        MPI_Recv(&a, rows * COLA, MPI_DOUBLE, MASTER, mtype, comm, &status);
-        MPI_Recv(&b, rows * COLB, MPI_DOUBLE, MASTER, mtype, comm, &status);
-        // end TO DO
+        MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(&a, rows*COLA, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Recv(&b, COLA*COLB, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
 
         /* Each worker works on their matrix multiplication */
         for (k = 0; k < COLB; k++){
@@ -150,14 +148,13 @@ int main (int argc, char *argv[]) {
 
         /* Each worker sends the output back to master */
         mtype = FROM_WORKER;
-        // TO DO
-        MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, comm);
-        MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, comm);
-        MPI_Send(&c, rows * COLB, MPI_DOUBLE, MASTER, mtype, comm);
-        // end TO DO
+        MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
+        MPI_Send(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
+        MPI_Send(&c, rows*COLB, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD);
     }
     /* Terminate MPI environment */
     MPI_Finalize();
+    return 0;
 }
 
 

@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
      */
 
     // TO DO
-    //MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     // end TO DO
 
     /* Calculating for each process */

@@ -20,14 +20,11 @@ int main(int argc, char *argv[]) {
     int result[WIDTH];                  /* for storing result in each process */
     int global_result[WIDTH];           /* vector result after all calculations */
 
-    //MPI_Status status;                  /* status for receiving */
-    MPI_Comm comm;
-
     /* Initialize MPI execution environment */
     // TO DO:
-    MPI_Init(NULL, NULL);
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Init( &argc,&argv);
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank);
+    MPI_Comm_size( MPI_COMM_WORLD, &nprocs);
     // end TO DO
     
     printf("Hello from process %d of %d \n",rank,nprocs);
@@ -36,6 +33,7 @@ int main(int argc, char *argv[]) {
 
     /* master doing part of the work here */
     if (rank == 0) {
+
         /* Initialize Matrix and Vector */
         for(i=0; i < WIDTH; i++) {
             // Change here if you want to use random integer
@@ -50,8 +48,7 @@ int main(int argc, char *argv[]) {
     /* Distribute Vector */
     /* All processes need the input vector for multiplication, so we can broadcast it to all processes */
     // TO DO:
-    MPI_Bcast(vector, WIDTH, MPI_INT, 0, MPI_COMM_WORLD);
-    // end TO DO
+    MPI_Bcast(vector, WIDTH , MPI_INT, 0, MPI_COMM_WORLD);
 
     /* Distribute Matrix */
     /* We can broadcast entire matrix to all processes, but matrix might be too big,
@@ -60,8 +57,7 @@ int main(int argc, char *argv[]) {
      * to each process, and each piece get stored in local_matrix.
      */
     // TO DO: 
-    MPI_Scatter(matrix, WIDTH * chunk_size, MPI_INT, local_matrix, WIDTH * chunk_size, MPI_INT, 0, comm);
-    // end TO DO
+    MPI_Scatter(matrix, WIDTH * chunk_size, MPI_INT, local_matrix, WIDTH * chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
 
     /* Each processor has some rows of matrix, and the vector. Each process works on their multiplication
      * and storing the result in result vector.
@@ -75,8 +71,7 @@ int main(int argc, char *argv[]) {
 
     /* Each process sends result back to master, and get stored in global_result */
     // TO DO:
-    MPI_Gather(result, chunk_size, MPI_INT, global_result, chunk_size, MPI_INT, 0, comm);
-    // end TO DO
+    MPI_Gather(result, chunk_size, MPI_INT, global_result, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
 
     /* master prints elements of the result */
     if(rank == 0) {
@@ -88,6 +83,3 @@ int main(int argc, char *argv[]) {
     MPI_Finalize();
     return 0;
 }
-
-     
-
