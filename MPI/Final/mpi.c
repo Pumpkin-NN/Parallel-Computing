@@ -1,6 +1,6 @@
 /***********************************************************
 * Program: 
-    Final: Pi estimation
+    Final Project: Pi estimation
 *************************************************************/
 #include <mpi.h>  
 #include <math.h>
@@ -9,12 +9,12 @@
 #include <string.h>
 #include <time.h>
 
-long toss_darts (long tosses, int rank){
-	long toss, number_in_circle = 0;        
+long long toss_darts (long long tosses, int rank){
+	long long toss, number_in_circle = 0;        
 	double x,y;
 	unsigned int seed = (unsigned) time(NULL);
 	srand(seed + rank);
-	for (toss = omp_get_thread_num(); toss < tosses; toss++) {
+	for (toss = 0; toss < tosses; toss++) {
 	   x = rand_r(&seed)/(double)RAND_MAX;
 	   y = rand_r(&seed)/(double)RAND_MAX;
 	   if( (x*x+y*y) <= 1.0 ){
@@ -26,7 +26,7 @@ long toss_darts (long tosses, int rank){
 
 int main(int argc, char *argv[]) {
    int rank, nprocs;
-   long number_of_tosses, number_of_toss, number_in_circle, circles;
+   long long number_of_tosses, number_of_toss, number_in_circle, circles;
    double pi_estimate;
    double PI25DT = 3.141592653589793238462643;
    

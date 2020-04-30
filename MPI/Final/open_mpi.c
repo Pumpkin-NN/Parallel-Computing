@@ -1,6 +1,6 @@
 /***********************************************************
 * Program: 
-    Final: Pi estimation
+    Final Project: Pi estimation
 *************************************************************/
 #include <omp.h>
 #include <stdio.h>
@@ -9,8 +9,8 @@
 #include <time.h>
 #include <math.h>
 
-long toss_darts (long tosses, long* circles){
-	long toss, number_in_circle = 0;        
+long long toss_darts (long long tosses, long long* circles){
+	long long toss, number_in_circle = 0;        
 	double x, y;
 	unsigned int seed = (unsigned) time(NULL);
     int rank = omp_get_thread_num();
@@ -29,17 +29,17 @@ long toss_darts (long tosses, long* circles){
 
 int main(int argc, char* argv[]){
     int thread_count = strtol(argv[1], NULL, 10);
-    int number_of_toss;
-    long number_of_tosses, circles;
+    long long number_of_toss, number_of_tosses, circles;
     double pi_estimate;
     double PI25DT = 3.141592653589793238462643;
 
    // Get input from the command line
    if (argc != 3){
-        printf("usage: mpirun -np <number_of_processes> ./ProgramName <number_of_tosses> \n");
+        printf("usage: ./ open_mpi <thread_count> <number_of_tosses> \n");
         exit(-1);
     } else {
         number_of_tosses = atoi(argv[2]);
+        printf("The thread_count is: %d, and the number_of_tosses is: %lld\n\n", thread_count, number_of_tosses);
     }
 
     number_of_toss = number_of_tosses/thread_count;
