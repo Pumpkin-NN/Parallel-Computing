@@ -21,11 +21,12 @@ int main(int argc, char *argv[]) {
     double x, y;
     double PI25DT = 3.141592653589793238462643;
 
-    MPI_Init(&argc, &argv);
+    /* Start up MPI */
+    MPI_Init(NULL, NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    // Get input from the command line
+    /* Get input <number_of_tosses> from the command line */
     if (argc!= 2){
         printf("usage: mpirun -np <number_of_processes> ./ProgramName <number_of_tosses> \n");
         MPI_Finalize();
@@ -34,10 +35,11 @@ int main(int argc, char *argv[]) {
         number_of_tosses = atoi(argv[1]);
     }
 
+    /* Random number generator */
     unsigned int seed = (unsigned) time(NULL);
 	srand(seed + rank);
 
-    // Use block partitioning
+    /* Use Block Partitioning */
     for (i = BLOCK_LOW(rank, nprocs, number_of_tosses); i <= BLOCK_HIGH(rank, nprocs, number_of_tosses); i++) {
 	   x = rand_r(&seed)/(double)RAND_MAX;
 	   y = rand_r(&seed)/(double)RAND_MAX;
@@ -46,16 +48,18 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /* Add up the integrals calculated by each process */
     MPI_Reduce(&number_in_circle, &circles, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 
+    /* Print the result */
     if (rank == 0) {
         pi_estimate = (4*circles)/((double) number_of_tosses);
         printf("Pi is approximately %.16f, Error is %.16f\n", pi_estimate, fabs(pi_estimate - PI25DT));
     }
+    /* Shut down MPI */
     MPI_Finalize(); 
     return 0;
-
-}
+}/*  main  */
 
 
 
