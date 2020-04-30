@@ -14,8 +14,9 @@ long long toss_darts (long long tosses, long long* circles){
 	double x, y;
 	unsigned int seed = (unsigned) time(NULL);
     int rank = omp_get_thread_num();
+    int thread_count = omp_get_num_threads();
 	srand(seed + rank);
-	for (toss = 0; toss < tosses; toss ++) {
+	for (toss = rank; toss < tosses; toss+=thread_count) {
 	   x = rand_r(&seed)/(double)RAND_MAX;
 	   y = rand_r(&seed)/(double)RAND_MAX;
 	   if( (x*x+y*y) <= 1.0 ){
@@ -29,7 +30,7 @@ long long toss_darts (long long tosses, long long* circles){
 
 int main(int argc, char* argv[]){
     int thread_count = strtol(argv[1], NULL, 10);
-    long long number_of_toss, number_of_tosses, circles;
+    long long number_of_tosses, circles;
     double pi_estimate;
     double PI25DT = 3.141592653589793238462643;
 
@@ -39,16 +40,12 @@ int main(int argc, char* argv[]){
         exit(-1);
     } else {
         number_of_tosses = atoi(argv[2]);
-        printf("The thread_count is: %d, and the number_of_tosses is: %lld\n\n", thread_count, number_of_tosses);
     }
 
-    number_of_toss = number_of_tosses/thread_count;
-
     # pragma omp parallel num_threads(thread_count)
-    toss_darts(number_of_toss, &circles);
+    toss_darts(number_of_tosses, &circles);
 
     pi_estimate = (4*circles)/((double) number_of_tosses);
 	printf("Pi is approximately %.16f, Error is %.16f\n", pi_estimate, fabs(pi_estimate - PI25DT));
     return 0;
-
 }
