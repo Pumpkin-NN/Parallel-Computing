@@ -36,8 +36,7 @@ int main(int argc, char *argv[]) {
   
    // Get input from the command line
    if (argc!= 2){
-        fprintf(stderr, "usage: mpirun -np <number_of_processes> ./ProgramName <number_of_tosses> \n");
-        fflush(stderr);
+        printf("usage: mpirun -np <number_of_processes> ./ProgramName <number_of_tosses> \n");
         MPI_Finalize();
         exit(-1);
     } else {
