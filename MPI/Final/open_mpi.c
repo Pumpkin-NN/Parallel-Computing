@@ -9,14 +9,16 @@
 #include <time.h>
 #include <math.h>
 
-long long toss_darts (long long tosses, long long* circles){
-	long long toss, number_in_circle = 0;        
+long long toss_darts (long long total_tosses, long long* circles){
+	long long i, number_in_circle = 0;        
 	double x, y;
-	unsigned int seed = (unsigned) time(NULL);
     int rank = omp_get_thread_num();
     int thread_count = omp_get_num_threads();
+
+	unsigned int seed = (unsigned) time(NULL);
 	srand(seed + rank);
-	for (toss = rank; toss < tosses; toss+=thread_count) {
+
+	for (i = rank; i <= total_tosses; i += thread_count) {
 	   x = rand_r(&seed)/(double)RAND_MAX;
 	   y = rand_r(&seed)/(double)RAND_MAX;
 	   if( (x*x+y*y) <= 1.0 ){

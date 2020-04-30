@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
 
     unsigned int seed = (unsigned) time(NULL);
 	srand(seed + rank);
+
+    // Use block partitioning
     for (i = BLOCK_LOW(rank, nprocs, number_of_tosses); i <= BLOCK_HIGH(rank, nprocs, number_of_tosses); i++) {
 	   x = rand_r(&seed)/(double)RAND_MAX;
 	   y = rand_r(&seed)/(double)RAND_MAX;
