@@ -14,7 +14,7 @@ long toss_darts (long tosses, int rank){
 	double x,y;
 	unsigned int seed = (unsigned) time(NULL);
 	srand(seed + rank);
-	for (toss = 0; toss < tosses; toss++) {
+	for (toss = omp_get_thread_num(); toss < tosses; toss++) {
 	   x = rand_r(&seed)/(double)RAND_MAX;
 	   y = rand_r(&seed)/(double)RAND_MAX;
 	   if( (x*x+y*y) <= 1.0 ){
